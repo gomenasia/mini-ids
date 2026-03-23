@@ -1,7 +1,9 @@
 """Point d'entrer de l'ids"""
 
 import threading
+from config import INTERFACE
 from capture.sniffer import PacketCollector
+from aggregation.flow_builder import Global_vue
 # ── Point d'entrée ────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -9,18 +11,15 @@ if __name__ == "__main__":
     threads = []
     collector = PacketCollector()
 
-        
     def appele_sniffer():
+        """initialyse le sniffer"""
         try:
-            collector.start(iface="eth0", bpf_filter="ip")
+            collector.start(iface=INTERFACE, bpf_filter="ip")
         except KeyboardInterrupt:
             print(f"\n{collector.dropped_count} paquets abandoner.")
 
-    def appele_flow_builder():
-        pass
-
     threads.append(threading.Thread(target=appele_sniffer))
-    threads.append(threading.Thread(target=appele_flow_builder))
+    threads.append(threading.Thread(target=Global_vue.start_flow_builder, args=(collector,)))
 
     for thread in threads:
         thread.start()
