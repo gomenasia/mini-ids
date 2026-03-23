@@ -1,8 +1,8 @@
 """module qui sniff un reseaux et crée des instance de Packet pour chaque packet"""
 from datetime import datetime
 from scapy.all import sniff, IP, TCP, UDP, ICMP, DNS
-from config import Protocole, TCPFlag
-from queue import Queue
+from config import Protocole, TCPFlag, MAX_QUEUE_SIZE
+from queue import Queue, Full
 
 class Packet:
     def __init__(self, scapy_pkt):
@@ -56,14 +56,18 @@ class Packet:
 
 class PacketCollector:
     def __init__(self):
-        self.packets: Queue = Queue()
+        self.packets: Queue = Queue(maxsize=MAX_QUEUE_SIZE)
+        self.dropped_count = 0
 
     def handle(self, scapy_pkt):
         """Callback appelé par sniff() pour chaque paquet."""
         if not scapy_pkt.haslayer(IP):
             return                          # ignorer ARP, etc.
         pkt = Packet(scapy_pkt)
-        self.packets.put(pkt)
+        try:
+            self.packets.put_nowait(pkt)
+        except Full:
+            self.dropped_count += 1
         print(pkt)
 
     def start(self, iface="eth0", bpf_filter="ip"):

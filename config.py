@@ -4,6 +4,9 @@ from enum import Enum, Flag
 # config.py
 # Tous les seuils et constantes du projet — modifier ici, pas dans le code
 
+#constante
+MAX_QUEUE_SIZE = 15000 # 15 000 passcket max dans la queue
+
 # Réseau
 INTERFACE = None          # None = interface par défaut détectée automatiquement
 FLOW_WINDOW_SECONDS = 10  # Durée d'une fenêtre d'agrégation
