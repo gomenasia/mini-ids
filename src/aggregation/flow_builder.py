@@ -3,7 +3,7 @@ from collections import defaultdict
 from queue import Empty, Full, Queue
 from datetime import datetime
 from statistics import mean #median() , variance(), stdev()
-from config import Protocole, TCPFlag, FLOW_WINDOW_SECONDS
+from config import Protocole, TCPFlag, FLOW_WINDOW_SECONDS, keyboardInterruption
 
 # ======================== flux individuel ==============================
 class Flow():
@@ -121,8 +121,8 @@ class Global_vue():
 
     def start_flow_builder(self, queue):
         """initialyse le flow_builder"""
-        while True:
-            duration = datetime.now() - self.batch.timestamp_start 
+        while not keyboardInterruption.is_set(): # verifie si il y a keyboard interuption
+            duration = datetime.now() - self.batch.timestamp_start
             if duration.total_seconds() > FLOW_WINDOW_SECONDS:
                 try:
                     self.analysis.put_nowait(Batch_analysis(self.batch))
@@ -135,7 +135,7 @@ class Global_vue():
                 self.batch.append_packet(packet)
             except Empty:
                 continue
-    
+
     def get_oldest_analysis(self) -> Batch_analysis:
         """recupere la plus veille analyse dans la queue"""
         return self.analysis.get()

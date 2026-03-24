@@ -1,5 +1,6 @@
 """configuration et variable global"""
 from enum import Enum, Flag, auto
+import threading
 
 # config.py
 # Tous les seuils et constantes du projet — modifier ici, pas dans le code
@@ -72,3 +73,7 @@ class AlertType (Enum):
 
 class ModelNotTrainedError(Exception):
     pass
+
+# ======================================= Threadings events ===============================
+
+keyboardInterruption = threading.Event()
