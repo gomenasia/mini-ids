@@ -2,8 +2,8 @@
 
 import threading
 from config import INTERFACE
-from capture.sniffer import PacketCollector
-from aggregation.flow_builder import Global_vue
+from src.capture.sniffer import PacketCollector
+from src.aggregation.flow_builder import Global_vue
 # ── Point d'entrée ────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """module permettant de detecter les batch anormaux"""
 from sklearn.ensemble import IsolationForest
-from detection.rules import Alert
+from src.detection.rules import Alert
 from config import ModelNotTrainedError
 
 class Ml_detector():
