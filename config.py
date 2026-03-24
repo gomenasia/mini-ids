@@ -1,5 +1,5 @@
 """configuration et variable global"""
-from enum import Enum, Flag
+from enum import Enum, Flag, auto
 
 # config.py
 # Tous les seuils et constantes du projet — modifier ici, pas dans le code
@@ -61,3 +61,9 @@ class TCPFlag(Flag):
 
     def est_fermeture(self):
         return TCPFlag.FIN in self or TCPFlag.RST in self
+
+class AlertType (Enum):
+    """represente toute les type d'alert possible"""
+    ICMP_flood = auto()
+    SSH_bruteforce = auto()
+    SYN_scan = auto()

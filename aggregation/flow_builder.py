@@ -33,8 +33,8 @@ class Batch():
     def __init__(self):
         self.timestamp_start = datetime.now()
         self.flows = {} # keys : (ip_src, port_src, ip_dst, port_dst) | value : Flow
-        self.port_contacter = {} # keys : src_ip | value : set de port contacter
-        self.protocole_used = defaultdict(int)
+        self.protocole_used = {} # keys : src_ip | values : dict de protocole utiliser
+        self.port_reached = {} # keys : src_ip | value : dict de port contacter
 
     def append_packet(self, nvx_paquet):
         """permet l'ajout de flow"""
@@ -47,29 +47,46 @@ class Batch():
             self.flows[key] = Flow()
         self.flows[key].append_packet(nvx_paquet)
 
-        self.protocole_used[nvx_paquet.protocole] += 1
+        if nvx_paquet.src_ip not in self.protocole_used:
+            self.protocole_used[nvx_paquet.src_ip] = defaultdict(int)
+        self.protocole_used[nvx_paquet.src_ip] += 1
 
-        if nvx_paquet.src_ip not in self.port_contacter:
-            self.port_contacter[nvx_paquet.src_ip] = {nvx_paquet.dst_port}
-        else :
-            self.port_contacter[nvx_paquet.src_ip].add(nvx_paquet.dst_port)
+        if nvx_paquet.src_ip not in self.port_reached:
+            self.port_reached[nvx_paquet.src_ip] = defaultdict(int)
+        self.port_reached[nvx_paquet.src_ip][nvx_paquet.dst_port] += 1
 
 
 # =========================== produit une pre analyse ==================
 class Batch_analysis():
     def __init__(self, batch: Batch):
         self.batch = batch
-        self.total_flow = len(self.batch.flows)
-        self.total_syn = self._get_total_flag(TCPFlag.SYN)
-        self.total_ack = self._get_total_flag(TCPFlag.ACK)
-        self.distribution_protocole = self.batch.protocole_used
-        self.total_packet = sum(self.distribution_protocole.values())
+        self.total_count = {
+            "total_flow": len(self.batch.flows),
+            "total_syn": self._get_total_flag(TCPFlag.SYN, self.batch.flows.values()),
+            "total_ack": self._get_total_flag(TCPFlag.ACK, self.batch.flows.values()),
+        }
+        self.port_reached_by_src_ip = self.batch.port_reached
+        self.protocoel_used_by_user = self.batch.protocole_used
+        self.data_by_flow = self._get_data_by_flow()
 
-    def _get_total_flag(self, flag:TCPFlag):
+    def _get_total_flag(self, flag:TCPFlag, flows: list[Flow]):
         total = 0
-        for flow in self.batch.flows.values():
+        for flow in flows:
             total += flow.flags[flag]
         return total
+
+    def _get_data_by_flow(self):
+        data_by_flow_dict = {}
+        for key, flow in self.batch.flows.items():
+            data_by_flow_dict[key] = self._analyse_flow_data(flow)
+        return data_by_flow_dict
+
+    def _analyse_flow_data(self, flow):
+        return {
+            "flow_syn": self._get_total_flag(TCPFlag.SYN, [flow]),
+            "flow_ack": self._get_total_flag(TCPFlag.ACK, [flow]),
+            "packet_count": flow.packets_count,
+        }
 
 
 # ========================== chef d'orchestre du module ====================
