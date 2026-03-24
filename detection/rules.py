@@ -10,6 +10,7 @@ class Alert():
 
 
 def scan_de_port(analyse) -> list[Alert]:
+    """detect les attack de scan port"""
     alerts = [] # gere la possibiliter de plusieur attack dans le même batch
     for src_ip, port_dict in analyse.port_reached_by_src_ip.items():
         if len(port_dict) > SYN_SCAN_THRESHOLD:
@@ -19,7 +20,8 @@ def scan_de_port(analyse) -> list[Alert]:
                             analyse.batch.timestamp_start))
     return alerts
 
-def bruteforce_SSH(analyse) -> list[Alert]:
+def bruteforce_ssh(analyse) -> list[Alert]:
+    """detect les attack SSH bruteforce"""
     alerts = []
     for src_ip, port_dict in analyse.port_reached_by_src_ip.items():
         if port_dict[22] > SSH_BRUTE_THRESHOLD:
@@ -29,7 +31,8 @@ def bruteforce_SSH(analyse) -> list[Alert]:
                                 analyse.batch.timestamp_start)) # imprecis a 10 second près
     return alerts
 
-def flood_ICPM(analyse) -> list[Alert]:
+def flood_icmp(analyse) -> list[Alert]:
+    """detect les attack flood IMCP"""
     alerts = []
     for src_ip, proto_dict in analyse.protocoel_used_by_user.items():
         if proto_dict[Protocole.ICMP] > ICMP_FLOOD_THRESHOLD:
@@ -42,6 +45,6 @@ def flood_ICPM(analyse) -> list[Alert]:
 def set_of_rules(analyse):
     alerts = []
     alerts.extend(scan_de_port(analyse))
-    alerts.extend(bruteforce_SSH(analyse))
-    alerts.extend(flood_ICPM(analyse))
+    alerts.extend(bruteforce_ssh(analyse))
+    alerts.extend(flood_icmp(analyse))
     return alerts

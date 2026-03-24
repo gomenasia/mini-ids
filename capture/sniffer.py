@@ -1,8 +1,8 @@
 """module qui sniff un reseaux et crée des instance de Packet pour chaque packet"""
 from datetime import datetime
+from queue import Queue, Full
 from scapy.all import sniff, IP, TCP, UDP, ICMP, DNS
 from config import Protocole, TCPFlag, MAX_QUEUE_SIZE
-from queue import Queue, Full
 
 class Packet:
     def __init__(self, scapy_pkt):
@@ -71,6 +71,7 @@ class PacketCollector:
         print(pkt)
 
     def start(self, iface="eth0", bpf_filter="ip"):
+        """initialise le sniffer"""
         print(f"Sniff continu sur {iface}  (Ctrl+C pour arrêter)\n")
         sniff(
             iface=iface,

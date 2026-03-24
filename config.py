@@ -23,7 +23,7 @@ ISOLATION_FOREST_CONTAMINATION = 0.05  # 5% de trafic considéré anormal
 DB_PATH = "data/alerts.db"
 
 
-
+# ================================== ENUM =================================
 class Protocole(Enum):
     """enumere les protocole"""
     TCP  = 6
@@ -67,3 +67,8 @@ class AlertType (Enum):
     ICMP_flood = auto()
     SSH_bruteforce = auto()
     SYN_scan = auto()
+
+# ========================================= Exeption ======================================
+
+class ModelNotTrainedError(Exception):
+    pass
