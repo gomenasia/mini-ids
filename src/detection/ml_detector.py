@@ -23,24 +23,24 @@ class Ml_detector():
         """renvoie true si le score donnée correspond a une anomalie"""
         return score != 1
 
-    def predict(self, batch) -> Alert | None:
-        """donne une valeur de risque d'attaque dans le batch"""
+    def predict(self, batch_analyse) -> Alert | None:
+        """donne une valeur de risque d'attaque dans l'analyse du batch"""
         if self.has_been_trained is not True:
             raise ModelNotTrainedError("le modèle doit être entraîné avant de prédire")
 
         result = self.est_anomalie(
-            self.forest.predict([batch.to_vector()])[0] #predict renvoie [score] donc on utilise [0]
+            self.forest.predict([batch_analyse.to_vector()])[0] #predict renvoie [score] donc on utilise [0]
             )
 
         if result:
-            # alert = batch.find_suspect() #FIXME find_suspect pas implementer
+            # alert = batch_analyse.find_suspect() #FIXME find_suspect pas implementer
             # return alert
 
             return Alert(
                 None, #alert_type et
                 None, # src_ip vont venir avec find-suspect
                 None, #FIXME severiter pas implementer
-                batch.batch.timestamp_start
+                batch_analyse.batch.timestamp_start
             )
 
         else:

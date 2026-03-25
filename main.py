@@ -1,20 +1,20 @@
 """Point d'entrer de l'ids"""
 
 import threading
-from queue import Empty
 from config import INTERFACE, ModelNotTrainedError, keyboardInterruption
 from src.capture.sniffer import PacketCollector
 from src.aggregation.flow_builder import Global_vue
 from src.detection.ml_detector import Ml_detector
 from src.detection.rules import set_of_rules
-from src.storage.database import database
+from src.storage.database import Database
 # ── Point d'entrée ────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
 
-    collector = PacketCollector() # instance du sniffer 
+    collector = PacketCollector() # instance du sniffer
     flow_builder = Global_vue()   # instance du flow_builder
     ml_detector = Ml_detector()   # instance du ml_detector
+    database = Database()         # instacie la base de donnée
 
     def appele_sniffer():
         """initialyse le sniffer"""

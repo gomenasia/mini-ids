@@ -16,7 +16,7 @@ def scan_de_port(analyse) -> list[Alert]:
         if len(port_dict) > SYN_SCAN_THRESHOLD:
             alerts.append(Alert(AlertType .SYN_scan,
                             src_ip,
-                            None, #FIXME pas encore de severiter implementer
+                            calc_severity(len(port_dict), SYN_SCAN_THRESHOLD),
                             analyse.batch.timestamp_start))
     return alerts
 
@@ -27,7 +27,7 @@ def bruteforce_ssh(analyse) -> list[Alert]:
         if port_dict[22] > SSH_BRUTE_THRESHOLD:
             alerts.append(Alert(AlertType .SSH_bruteforce,
                                 src_ip,
-                                None, #FIXME pas encore de severiter implementer
+                                calc_severity(port_dict[22], SSH_BRUTE_THRESHOLD),
                                 analyse.batch.timestamp_start)) # imprecis a 10 second près
     return alerts
 
@@ -38,13 +38,25 @@ def flood_icmp(analyse) -> list[Alert]:
         if proto_dict[Protocole.ICMP] > ICMP_FLOOD_THRESHOLD:
             alerts.append(Alert(AlertType .ICMP_flood,
                                 src_ip,
-                                None, #FIXME pas encore de severiter implementer
+                                calc_severity(proto_dict[Protocole.ICMP], ICMP_FLOOD_THRESHOLD),
                                 analyse.batch.timestamp_start))
     return alerts
 
 def set_of_rules(analyse):
+    """éxécute une baterrie de test et renvoie une list d'alert"""
     alerts = []
     alerts.extend(scan_de_port(analyse))
     alerts.extend(bruteforce_ssh(analyse))
     alerts.extend(flood_icmp(analyse))
     return alerts
+
+def calc_severity(value, treshold):
+    """calcule le sévérité d'une attaque"""
+    if value > 2*treshold:      # l'attaquee depasse le seuil de 200%
+        return 3
+    elif value > 1.5*treshold:  # l'attaquee depasse le seuil de 150%
+        return 2
+    elif value > treshold:      # l'attaquee depasse le seuil
+        return 1
+    else:
+        return 0                # au cas ou l'attaque ne depasse pas le seuil
