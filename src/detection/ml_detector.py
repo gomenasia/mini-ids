@@ -44,4 +44,4 @@ class Ml_detector():
             )
 
         else:
-            return None
+            return None #TODO penser a ne pas dupliquer les alert
