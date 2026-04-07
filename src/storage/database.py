@@ -5,6 +5,7 @@ from config import DB_PATH
 class Database():
     def __init__(self):
         self.db = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self.db.row_factory = sqlite3.Row
         self.cursor = self.db.cursor()
         self._init_db()
 

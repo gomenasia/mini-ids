@@ -161,7 +161,9 @@ class Global_vue():
 
     def start_flow_builder(self, queue):
         """initialyse le flow_builder"""
+        count = 1
         while not keyboardInterruption.is_set(): # verifie si il y a keyboard interuption
+            count += 1
             duration = datetime.now() - self.batch.timestamp_start
             if duration.total_seconds() > FLOW_WINDOW_SECONDS:
                 try:
@@ -170,15 +172,16 @@ class Global_vue():
                     self.dropped_analyse += 1
                 self.batch = Batch()
 
+            print("[BUILD]" + str(count))
             try:
                 packet = queue.get(timeout = 0.2)
                 self.batch.append_packet(packet)
             except Empty:
                 continue
 
-    def get_oldest_analysis(self) -> Batch_analysis:
+    def get_oldest_analysis(self, timeout=None) -> Batch_analysis:
         """recupere la plus veille analyse dans la queue"""
-        return self.analysis.get()
+        return self.analysis.get(timeout=timeout)
 
 
 def _calc_seuil_de_suspicion(dictionaire:dict, k:int =2):

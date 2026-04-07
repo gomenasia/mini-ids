@@ -24,7 +24,7 @@ def bruteforce_ssh(analyse) -> list[Alert]:
     """detect les attack SSH bruteforce"""
     alerts = []
     for src_ip, port_dict in analyse.port_reached_by_src_ip.items():
-        if port_dict[22] > SSH_BRUTE_THRESHOLD:
+        if port_dict.get(22, 0) > SSH_BRUTE_THRESHOLD:
             alerts.append(Alert(AlertType .SSH_bruteforce,
                                 src_ip,
                                 calc_severity(port_dict[22], SSH_BRUTE_THRESHOLD),
@@ -34,7 +34,7 @@ def bruteforce_ssh(analyse) -> list[Alert]:
 def flood_icmp(analyse) -> list[Alert]:
     """detect les attack flood IMCP"""
     alerts = []
-    for src_ip, proto_dict in analyse.protocoel_used_by_user.items():
+    for src_ip, proto_dict in analyse.protocole_used_by_user.items():
         if proto_dict[Protocole.ICMP] > ICMP_FLOOD_THRESHOLD:
             alerts.append(Alert(AlertType .ICMP_flood,
                                 src_ip,
@@ -50,13 +50,13 @@ def set_of_rules(analyse):
     alerts.extend(flood_icmp(analyse))
     return alerts
 
-def calc_severity(value, treshold):
+def calc_severity(value, threshold):
     """calcule le sévérité d'une attaque"""
-    if value > 2*treshold:      # l'attaquee depasse le seuil de 200%
+    if value > 2*threshold:      # l'attaquee depasse le seuil de 200%
         return 3
-    elif value > 1.5*treshold:  # l'attaquee depasse le seuil de 150%
+    elif value > 1.5*threshold:  # l'attaquee depasse le seuil de 150%
         return 2
-    elif value > treshold:      # l'attaquee depasse le seuil
+    elif value > threshold:      # l'attaquee depasse le seuil
         return 1
     else:
         return 0                # au cas ou l'attaque ne depasse pas le seuil

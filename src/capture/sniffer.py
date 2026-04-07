@@ -2,7 +2,7 @@
 from datetime import datetime
 from queue import Queue, Full
 from scapy.all import sniff, IP, TCP, UDP, ICMP, DNS
-from config import Protocole, TCPFlag, MAX_QUEUE_SIZE
+from config import Protocole, TCPFlag, MAX_QUEUE_SIZE, keyboardInterruption
 
 class Packet:
     def __init__(self, scapy_pkt):
@@ -57,26 +57,31 @@ class Packet:
 class PacketCollector:
     def __init__(self):
         self.packets: Queue = Queue(maxsize=MAX_QUEUE_SIZE)
+        self.packets_count = 0
         self.dropped_count = 0
+        self.current_pkt = ""
 
     def handle(self, scapy_pkt):
         """Callback appelé par sniff() pour chaque paquet."""
+        print("[COLLECTOR]" + str(self.packets_count))
         if not scapy_pkt.haslayer(IP):
             return                          # ignorer ARP, etc.
+        self.packets_count += 1 #RECHECK packet count ou handle count ?
         pkt = Packet(scapy_pkt)
         try:
             self.packets.put_nowait(pkt)
+            self.current_pkt = repr(pkt)
         except Full:
             self.dropped_count += 1
-        print(pkt)
 
     def start(self, iface="eth0", bpf_filter="ip"):
         """initialise le sniffer"""
-        print(f"Sniff continu sur {iface}  (Ctrl+C pour arrêter)\n")
         sniff(
             iface=iface,
             filter=bpf_filter,
             prn=self.handle,
             store=False,        # scapy ne stocke pas, on gère nous-mêmes
             count=0,            # infini
+            stop_filter=lambda _: keyboardInterruption.is_set(),
+            timeout=1,
         )
