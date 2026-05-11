@@ -10,7 +10,7 @@ MAX_QUEUE_SIZE = 15000 # 15 000 passcket max dans la queue
 
 # Réseau
 INTERFACE = None          # None = interface par défaut détectée automatiquement
-FLOW_WINDOW_SECONDS = 2  # Durée d'une fenêtre d'agrégation
+FLOW_WINDOW_SECONDS = 10  # Durée d'une fenêtre d'agrégation
 
 # Seuils règles signatures
 SYN_SCAN_THRESHOLD = 15       # SYN sans ACK en FLOW_WINDOW_SECONDS → scan de ports
