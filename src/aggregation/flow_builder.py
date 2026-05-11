@@ -161,23 +161,25 @@ class Global_vue():
 
     def start_flow_builder(self, queue):
         """initialyse le flow_builder"""
-        count = 1
+        count = 0
         while not keyboardInterruption.is_set(): # verifie si il y a keyboard interuption
-            count += 1
+            # Vérification fenêtre temporelle : OK ici, avant le get
             duration = datetime.now() - self.batch.timestamp_start
-            if duration.total_seconds() > FLOW_WINDOW_SECONDS:
+            if int(duration.total_seconds()) >= FLOW_WINDOW_SECONDS:
                 try:
                     self.analysis.put_nowait(Batch_analysis(self.batch))
                 except Full:
                     self.dropped_analyse += 1
                 self.batch = Batch()
+                print("new batch")
 
-            print("[BUILD]" + str(count))
             try:
-                packet = queue.get(timeout = 0.2)
+                packet = queue.get(timeout=0.2)
+                count += 1
+                print("[BUILD] paquet #" + str(count))  # ← seulement si paquet reçu
                 self.batch.append_packet(packet)
             except Empty:
-                continue
+                continue   # ← rien à loguer, c'est normal
 
     def get_oldest_analysis(self, timeout=None) -> Batch_analysis:
         """recupere la plus veille analyse dans la queue"""
@@ -219,6 +221,7 @@ def _normalisation(dictionaire:dict, normal:int):
     """
     for key, value in dictionaire.items():
         dictionaire[key] = value/normal
+    return True 
 
 def _dict_put_all(main_dict:dict, to_put:dict):
     """ajoute le contenue d'un dictionnaire a un autre
@@ -229,7 +232,7 @@ def _dict_put_all(main_dict:dict, to_put:dict):
     """
 
     for key, value in to_put.items():
-        if key in main_dict.keys():
+        if key not in main_dict.keys():
             main_dict[key] = value
         else:
             main_dict[key] += value

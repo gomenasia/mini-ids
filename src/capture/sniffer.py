@@ -76,12 +76,13 @@ class PacketCollector:
 
     def start(self, iface="eth0", bpf_filter="ip"):
         """initialise le sniffer"""
-        sniff(
-            iface=iface,
-            filter=bpf_filter,
-            prn=self.handle,
-            store=False,        # scapy ne stocke pas, on gère nous-mêmes
-            count=0,            # infini
-            stop_filter=lambda _: keyboardInterruption.is_set(),
-            timeout=1,
-        )
+        while not keyboardInterruption.is_set():
+            sniff(
+                iface=iface,
+                filter=bpf_filter,
+                prn=self.handle,
+                store=False,        # scapy ne stocke pas, on gère nous-mêmes
+                count=0,            # infini
+                stop_filter=lambda _: keyboardInterruption.is_set(),
+                timeout=2,
+            )

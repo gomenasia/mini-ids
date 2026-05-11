@@ -35,7 +35,7 @@ def flood_icmp(analyse) -> list[Alert]:
     """detect les attack flood IMCP"""
     alerts = []
     for src_ip, proto_dict in analyse.protocole_used_by_user.items():
-        if proto_dict[Protocole.ICMP] > ICMP_FLOOD_THRESHOLD:
+        if proto_dict[Protocole.ICMP] &  proto_dict[Protocole.ICMP] > ICMP_FLOOD_THRESHOLD:
             alerts.append(Alert(AlertType .ICMP_flood,
                                 src_ip,
                                 calc_severity(proto_dict[Protocole.ICMP], ICMP_FLOOD_THRESHOLD),

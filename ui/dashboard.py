@@ -110,22 +110,28 @@ class Dashboard:
         )
         return Panel(grid)
 
-
-
-    def start(self):
+    def init_layout(self) -> Layout:
+        """initialise le layout"""
         layout = self.make_layout()
         layout["header"].update(self.header())
         layout["alert"].update(self.make_alert_display())
         layout["batch"].update(self.make_batch_display())
         layout["packet"].update(self.make_packet_display())
         layout["config"].update(self.make_config_display())
+        return layout
 
-        with Live(layout, refresh_per_second=10) as live:
-            while not keyboardInterruption.is_set():
-                try:
-                    layout["header"].update(self.header())
-                    layout["packet"].update(self.make_packet_display())
-                    time.sleep(0.1)
-                except Exception as e:
-                    live.console.print(f"ERREUR: {e}")
-                #appelle des fonction d'update
+    def start(self):
+        layout = self.init_layout()
+
+        try:
+            with Live(layout, refresh_per_second=10, screen=False) as live:
+                while not keyboardInterruption.is_set():
+                    try:
+                        layout["header"].update(self.header())
+                        layout["packet"].update(self.make_packet_display())
+                        layout["alert"].update(self.make_alert_display())
+                        time.sleep(0.1)
+                    except Exception as e:
+                        live.console.print(f"[DASHBOARD] ERREUR: {e}")
+        except KeyboardInterrupt:
+            keyboardInterruption.set()   # sécurité si le signal arrive ici

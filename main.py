@@ -1,5 +1,7 @@
 """Point d'entrer de l'ids"""
 
+from datetime import time
+from time import sleep
 import threading
 from queue import Empty
 
@@ -25,7 +27,12 @@ if __name__ == "__main__":
         try:
             collector.start(iface=INTERFACE, bpf_filter="ip")
         except KeyboardInterrupt:
+            print("keyboard interupt")
+        except Exception as e:
+            print(f"Erreur : {e}")
+        finally:
             keyboardInterruption.set()
+
 
     def detection():
         """detecte et enregistre les alert"""
@@ -37,6 +44,7 @@ if __name__ == "__main__":
             try:
                 current_batch_analyse = flow_builder.get_oldest_analysis(timeout=1)
             except Empty:
+                print("fail" + str(count-1))
                 continue
 
             alert_list.extend(set_of_rules(current_batch_analyse))
@@ -47,6 +55,7 @@ if __name__ == "__main__":
 
             for alert in alert_list:
                 database.append_alert(alert)
+            alert_list = []
 
     # ========================= Gestion des threads =======================
     threads = []
@@ -54,10 +63,20 @@ if __name__ == "__main__":
     threads.append(threading.Thread(target=appele_sniffer, daemon=True))
     threads.append(threading.Thread(target=flow_builder.start_flow_builder, args=(collector.packets ,), daemon=True))
     threads.append(threading.Thread(target=detection, daemon=True))
-    #threads.append(threading.Thread(target=dashboard.start, daemon=True))
+    threads.append(threading.Thread(target=dashboard.start, daemon=True))
 
     for thread in threads:
         thread.start()
 
-    for thread in threads:
-        thread.join()
+    try:
+        while True:                          # boucle active sur le thread principal
+            sleep(0.5)
+            if not any(t.is_alive() for t in threads):
+                break
+    except KeyboardInterrupt:
+        print("\n[IDS] Arrêt demandé...")
+        keyboardInterruption.set()           # signal propre à tous les threads
+    finally:
+        for thread in threads:
+            thread.join(timeout=3)           # timeout pour ne pas bloquer indéfiniment
+        print("[IDS] Arrêté.")
